@@ -104,7 +104,7 @@ int PluginNeuralColorCalib::RunNeuralopenCV(double *input) {
 #endif
             for (int j=0; j<sizeOutLayer; j++){ //inserts the output in an output array
 #ifdef OPENCV2
-                tmpout=CV_MAT_ELEM(*netout,double,0,j);  //TODO find way to do it with OpenCV v.3+
+                tmpout=CV_MAT_ELEM(*netout,double,0,j);
 #else
                 tmpout = netout->at<double>(0, j);
 #endif

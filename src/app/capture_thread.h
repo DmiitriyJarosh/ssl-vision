@@ -22,8 +22,11 @@
 #ifndef CAPTURE_THREAD_H
 #define CAPTURE_THREAD_H
 #include "capturedc1394v2.h"
-#include "capturefromfile.h"
 #include "capturev4l.h"
+#ifdef OPENCV3
+  #include "captureopencv.h"
+#endif
+#include "capturefromfile.h"
 #include "capture_generator.h"
 #include <QThread>
 #include "ringbuffer.h"
@@ -59,12 +62,16 @@ protected:
   VisionStack * stack;
   FrameCounter * counter;
   CaptureInterface * capture;
+
   CaptureInterface * captureDC1394;
   CaptureInterface * captureV4L;
   CaptureInterface * captureBlueFox2;
   CaptureInterface * captureFlycap;
   CaptureInterface * captureFiles;
   CaptureInterface * captureGenerator;
+#ifdef OPENCV3
+  CaptureInterface * captureOpenCv;
+#endif
   CaptureInterface * captureBasler;
   AffinityManager * affinity;
   FrameBuffer * rb;
@@ -77,6 +84,9 @@ protected:
   VarList * flycap;
   VarList * generator;
   VarList * fromfile;
+#ifdef OPENCV3
+  VarList * opencv;
+#endif
   VarList * basler;
   VarList * control;
   VarTrigger * c_start;

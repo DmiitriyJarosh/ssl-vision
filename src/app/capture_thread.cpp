@@ -33,16 +33,22 @@ CaptureThread::CaptureThread(int cam_id)
   control->addChild( (VarType*) (c_reset  = new VarTrigger("reset bus","Reset")));
   control->addChild( (VarType*) (c_auto_refresh= new VarBool("auto refresh params",true)));
   control->addChild( (VarType*) (c_refresh= new VarTrigger("re-read params","Refresh")));
-  control->addChild( (VarType*) (captureModule= new VarStringEnum("Capture Module","DC 1394")));
+  control->addChild( (VarType*) (captureModule= new VarStringEnum("Capture Module","Read from files")));
   captureModule->addFlags(VARTYPE_FLAG_NOLOAD_ENUM_CHILDREN);
   captureModule->addItem("DC 1394");
   captureModule->addItem("Video 4 Linux");
   captureModule->addItem("Read from files");
   captureModule->addItem("Generator");
+#ifdef OPENCV3
+  captureModule->addItem("Capture from USB webcam");
+#endif
   settings->addChild( (VarType*) (dc1394 = new VarList("DC1394")));
   settings->addChild( (VarType*) (v4l = new VarList("Video 4 Linux")));
   settings->addChild( (VarType*) (fromfile = new VarList("Read from files")));
   settings->addChild( (VarType*) (generator = new VarList("Generator")));
+#ifdef OPENCV3
+  settings->addChild( (VarType*) (opencv = new VarList("OpenCV")));
+#endif
   settings->addFlags( VARTYPE_FLAG_AUTO_EXPAND_TREE );
   c_stop->addFlags( VARTYPE_FLAG_READONLY );
   c_refresh->addFlags( VARTYPE_FLAG_READONLY );
@@ -55,9 +61,13 @@ CaptureThread::CaptureThread(int cam_id)
   counter=new FrameCounter();
   capture=0;
   captureDC1394 = new CaptureDC1394v2(dc1394,camId);
+  captureV4L = new CaptureV4L(v4l,camId);
+
+#ifdef OPENCV3
+  captureOpenCv = new CaptureOpenCv(opencv);
+#endif
   captureFiles = new CaptureFromFile(fromfile, camId);
   captureGenerator = new CaptureGenerator(generator);
-  captureV4L = new CaptureV4L(v4l,camId);
 
 #ifdef PYLON5
   captureModule->addItem("Basler GigE");
@@ -100,6 +110,9 @@ CaptureThread::~CaptureThread()
 {
   delete captureDC1394;
   delete captureV4L;
+#ifdef OPENCV3
+  delete captureOpenCv;
+#endif
   delete captureFiles;
   delete captureGenerator;
   delete counter;
@@ -140,6 +153,10 @@ void CaptureThread::selectCaptureMethod() {
 #ifdef MVIMPACT
   } else if(captureModule->getString() == "BlueFox2") {
     new_capture = captureBlueFox2;
+#endif
+#ifdef OPENCV3
+  } else if(captureModule->getString() == "Capture from USB webcam") {
+    new_capture = captureOpenCv;
 #endif
   } else if(captureModule->getString() == "Video 4 Linux") {
     new_capture = captureV4L;
